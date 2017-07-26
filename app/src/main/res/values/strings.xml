@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Timer</string>
+
+    <string name="stop">Stop</string>
+    <string name="start_or_reset">Start/Reset</string>
+
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="action_settings">Settings</string>
+</resources>
