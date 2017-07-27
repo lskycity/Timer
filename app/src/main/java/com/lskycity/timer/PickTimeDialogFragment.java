@@ -18,8 +18,6 @@ import butterknife.ButterKnife;
 
 public class PickTimeDialogFragment extends BaseDialogFragment {
 
-    int key;
-
     @BindView(R.id.minusInput)
     EditText minusInput;
 
