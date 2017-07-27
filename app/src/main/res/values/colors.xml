@@ -5,4 +5,10 @@
     <color name="colorAccent">#FF4081</color>
 
     <color name="black_overlay">#66000000</color>
+
+    <color name="transparent">#00000000</color>
+
+    <color name="background_normal">#FF4CAF50</color>
+    <color name="background_tip">#FFFFEB3B</color>
+    <color name="background_waring">#FFF44336</color>
 </resources>

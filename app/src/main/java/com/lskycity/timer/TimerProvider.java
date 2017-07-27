@@ -2,6 +2,7 @@ package com.lskycity.timer;
 
 import android.content.Context;
 import android.os.CountDownTimer;
+import android.os.SystemClock;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -13,8 +14,10 @@ public class TimerProvider {
 
     private CountDownTimer timer;
 
+    private long startTime = 0;
+
     public void startTimer(long millisInFuture) {
-        timer = new CountDownTimer(millisInFuture, 1000){
+        timer = new CountDownTimer(millisInFuture + 1000, 1000){
 
             @Override
             public void onTick(long millisUntilFinished) {
@@ -28,12 +31,24 @@ public class TimerProvider {
             }
         };
         timer.start();
+        startTime = SystemClock.elapsedRealtime();
     }
 
     private void notifyTimeOut() {
         EventBus.getDefault().post(new Millis(0));
     }
 
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public long resetStartTime() {
+        return startTime = 0;
+    }
+
+    public boolean isStarting() {
+        return startTime != 0;
+    }
 
     private void notifyUI(long millisUntilFinished) {
         EventBus.getDefault().post(new Millis(millisUntilFinished));

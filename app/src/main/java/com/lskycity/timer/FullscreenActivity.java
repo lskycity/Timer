@@ -3,17 +3,23 @@ package com.lskycity.timer;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.media.MediaPlayer;
+import android.os.SystemClock;
+import android.support.annotation.ColorInt;
+import android.support.annotation.ColorRes;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Chronometer;
 import android.widget.TextView;
 
 import com.lskycity.support.utils.SharedPreUtils;
+import com.lskycity.timer.ui.SettingsActivity;
+import com.lskycity.timer.ui.TimerListActivity;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -46,12 +52,19 @@ public class FullscreenActivity extends AppCompatActivity {
     private static final int UI_ANIMATION_DELAY = 300;
     private final Handler mHideHandler = new Handler();
 
+    private TimerProvider timerProvider;
+
     @BindView(R.id.fullscreen_content)
     TextView mContentView;
 
     @BindView(R.id.containerLayout)
     View containerLayout;
 
+    @BindView(R.id.chronometer)
+    Chronometer chronometer;
+
+    @BindView(R.id.fullscreen_content_controls)
+    View mControlsView;
 
     private final Runnable mHidePart2Runnable = new Runnable() {
         @SuppressLint("InlinedApi")
@@ -70,9 +83,6 @@ public class FullscreenActivity extends AppCompatActivity {
                     | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         }
     };
-
-    @BindView(R.id.fullscreen_content_controls)
-    View mControlsView;
 
     private final Runnable mShowPart2Runnable = new Runnable() {
         @Override
@@ -101,6 +111,8 @@ public class FullscreenActivity extends AppCompatActivity {
         setContentView(R.layout.activity_fullscreen);
         ButterKnife.bind(this);
 
+        timerProvider = TimerApplication.get().getProvider();
+
         mVisible = true;
         mContentView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -109,7 +121,6 @@ public class FullscreenActivity extends AppCompatActivity {
             }
         });
 
-        
     }
 
     @Override
@@ -119,9 +130,11 @@ public class FullscreenActivity extends AppCompatActivity {
         if(TimerApplication.get().getProvider().isTimeOut()) {
             long time = SharedPreUtils.getLong(this, Constant.KEY_START_TIME, 1000*60*2);
             EventBus.getDefault().post(new Millis(time));
-            containerLayout.setBackgroundColor(0xFF4CAF50);
+            setTimerBackground(R.color.transparent);
+        } else if(timerProvider.isStarting()){
+            chronometer.setBase(timerProvider.getStartTime());
+            chronometer.start();
         }
-
 
     }
 
@@ -131,11 +144,14 @@ public class FullscreenActivity extends AppCompatActivity {
     public void onEvent(Millis event) {
         long waringTime = SharedPreUtils.getLong(this, Constant.KEY_TIP_TIME, 1000*40);
         long waringTime2 = SharedPreUtils.getLong(this, Constant.KEY_WARING_TIME, 1000*10);
+        long normal = SharedPreUtils.getLong(this, Constant.KEY_NORMAL_TIME, 1000*60);
 
         if(event.millis <= waringTime2) {
-            containerLayout.setBackgroundColor(0xFFF44336);
+            setTimerBackground(R.color.background_waring);
         } else if(event.millis <= waringTime) {
-            containerLayout.setBackgroundColor(0xFFFFEB3B);
+            setTimerBackground(R.color.background_tip);
+        } else if(event.millis <= normal) {
+            setTimerBackground(R.color.background_normal);
         }
         mContentView.setText(event.toString());
 
@@ -149,17 +165,28 @@ public class FullscreenActivity extends AppCompatActivity {
     @OnClick(R.id.startButton)
     public void onStartClick(View view) {
         long time = SharedPreUtils.getLong(this, Constant.KEY_START_TIME, 1000*60*2);
-        containerLayout.setBackgroundColor(0xFF4CAF50);
+        setTimerBackground(R.color.transparent);
         if(TimerApplication.get().getProvider().isTimeOut()) {
             TimerApplication.get().getProvider().startTimer(time);
             startService();
+
+            chronometer.setBase(SystemClock.elapsedRealtime());
+            chronometer.start();
+
         } else {
             TimerApplication.get().getProvider().cancelTime();
             EventBus.getDefault().post(new Millis(time));
             stopService();
+            timerProvider.resetStartTime();
+            chronometer.stop();
         }
 
         stopPlay();
+    }
+
+    private void setTimerBackground(@ColorRes int colorId) {
+        @ColorInt int color = ResourcesCompat.getColor(getResources(), colorId, getTheme());
+        containerLayout.setBackgroundColor(color);
     }
 
     private void stopPlay() {
@@ -174,6 +201,9 @@ public class FullscreenActivity extends AppCompatActivity {
         TimerApplication.get().getProvider().cancelTime();
         stopPlay();
         stopService();
+
+        timerProvider.resetStartTime();
+        chronometer.stop();
     }
 
     private void startService() {
@@ -202,6 +232,10 @@ public class FullscreenActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId() == R.id.action_settings) {
             openSettingsActivity();
+            return true;
+        } else if(item.getItemId() == R.id.action_list) {
+            Intent intent = new Intent(this, TimerListActivity.class);
+            startActivity(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);

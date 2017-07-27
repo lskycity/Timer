@@ -2,9 +2,15 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <Preference
         android:key="key_start_time"
-        android:title="倒计时"
+        android:title="倒计时长"
         android:summary="02:00"
         android:defaultValue="02:00"/>
+
+    <Preference
+        android:key="key_normal_time"
+        android:title="升华时间"
+        android:summary="01:00"
+        android:defaultValue="01:00"/>
 
     <Preference
         android:key="key_tip_time"
@@ -14,7 +20,7 @@
 
     <Preference
         android:key="key_waring_time"
-        android:title="倒计时"
+        android:title="提醒时间2"
         android:summary="00:10"
         android:defaultValue="00:10"/>
 

@@ -21,9 +21,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SettingsActivity" android:label="@string/action_settings" />
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:label="@string/action_settings" />
 
-        <service android:name=".TimerService" />
+        <service
+            android:name=".TimerService"/>
+
+        <activity
+            android:name=".ui.TimerListActivity"
+            android:label="@string/action_view_list" />
     </application>
 
 </manifest>
